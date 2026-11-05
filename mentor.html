@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Panel Mentor – Sang Juara School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Tailwind Play CDN: cocok untuk prototipe. Untuk produksi, pakai Tailwind CLI/PostCSS. -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{
+  fontFamily:{sans:['"Plus Jakarta Sans"','ui-sans-serif','system-ui','sans-serif']},
+  colors:{bg:'var(--bg)',card:'var(--card)',ink:'var(--ink)',mute:'var(--mute)',line:'var(--line)',brand:'var(--blue)',deep:'var(--deep)',sun:'#FFC21A',wa:'#16A34A',soft:'var(--soft)',tagb:'var(--tagb)',warnbg:'var(--warnbg)',warnt:'var(--warnt)',bad:'var(--bad)',badbg:'var(--badbg)',okbg:'var(--okbg)',okt:'var(--okt)'},
+  boxShadow:{card:'var(--sh)'}}}}
+</script>
+<style>
+:root{--bg:#F6F5FF;--card:#fff;--ink:#1B1D3A;--mute:#5D6086;--line:#E3E5F4;--blue:#2326C9;--deep:#14187A;--soft:#EEF0FF;--tagb:#E8EAFF;--warnbg:#FFF4D1;--warnt:#7A4300;--bad:#C0392B;--badbg:#FFE4E1;--okbg:#DCF5E5;--okt:#0F6A35;--sh:0 6px 24px rgba(35,38,201,.08);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D0F2B;--card:#171A45;--ink:#EEF0FF;--mute:#A6A9D6;--line:#2B2F6B;--blue:#7479FF;--soft:#232763;--tagb:#262A6E;--warnbg:#3D3210;--warnt:#FFE3A0;--badbg:#4A1E22;--bad:#FF8A80;--okbg:#12382A;--okt:#7BE0A5;--sh:none;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0D0F2B;--card:#171A45;--ink:#EEF0FF;--mute:#A6A9D6;--line:#2B2F6B;--blue:#7479FF;--soft:#232763;--tagb:#262A6E;--warnbg:#3D3210;--warnt:#FFE3A0;--badbg:#4A1E22;--bad:#FF8A80;--okbg:#12382A;--okt:#7BE0A5;--sh:none;color-scheme:dark}
+:focus-visible{outline:3px solid #FFC21A;outline-offset:2px}
+[hidden]{display:none!important}
+.ment:has(input:checked){border-color:var(--blue)}
+.sw span{transition:.2s}.sw span:after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.2s}
+.sw input:checked+span{background:#16A34A}.sw input:checked+span:after{left:23px}
+</style>
+<style type="text/tailwindcss">
+@layer components{
+ .card{@apply bg-card border border-line rounded-[20px] p-6 shadow-card mb-[18px]}
+ .tag{@apply inline-flex items-center gap-1 text-[11.5px] font-bold rounded-full px-2.5 py-[3px] bg-tagb text-brand}
+ .tag-y{@apply bg-warnbg text-warnt}.tag-r{@apply bg-badbg text-bad}
+ .btn{@apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-bold bg-brand text-white cursor-pointer border-0 transition hover:brightness-110}
+ .btn-sm{@apply px-3.5 py-2 text-[13px]}.btn-wa{@apply bg-wa}.btn-sun{@apply bg-sun text-[#2A2000]}.btn-soft{@apply bg-soft text-mute}.btn-ghost{@apply bg-white/15 text-white}
+ .field{@apply w-full border-[1.5px] border-line bg-card rounded-xl px-3.5 py-3}
+ .lbl{@apply flex justify-between items-baseline gap-2 font-bold text-sm mt-3.5 mb-1.5}
+ .lbl small{@apply font-normal text-mute text-[12.5px]}
+ .sub{@apply text-mute text-sm mt-1.5 mb-4}
+ .chip{@apply inline-flex items-center gap-1 rounded-full px-3.5 py-1.5 text-[13px] font-semibold bg-soft text-ink cursor-pointer border-0}
+ .chip[aria-pressed=true]{@apply bg-sun text-[#2A2000]}
+ .tab{@apply px-6 py-2 rounded-full font-bold text-mute bg-transparent border-0 cursor-pointer}
+ .tab[aria-selected=true]{@apply bg-brand text-white}
+ .ib{@apply w-[38px] h-[38px] rounded-full grid place-items-center relative bg-transparent border-0 cursor-pointer text-ink}
+ .av{@apply w-9 h-9 rounded-full grid place-items-center text-white font-extrabold text-[13px] shrink-0}
+ .stat{@apply flex items-center gap-3.5 bg-white/10 border border-white/20 rounded-2xl px-[18px] py-3.5}
+ .kcol{@apply bg-soft rounded-2xl p-3.5}
+ .kc{@apply bg-card rounded-[14px] p-3.5 mb-3}
+ .cat{@apply bg-tagb text-brand rounded-[10px] px-3 py-2.5 text-[12.5px] mb-3}
+ .emp{@apply border-2 border-dashed border-line rounded-[14px] px-3.5 py-5 text-center text-xs text-mute}
+ .row{@apply flex items-center justify-between gap-2.5 py-2.5 border-b border-line last:border-0}
+ .ment{@apply flex items-center gap-3 bg-soft border-[1.5px] border-transparent rounded-xl px-3 py-2.5 mb-2 cursor-pointer}
+ .slot{@apply rounded-full py-2.5 font-bold text-[13.5px] bg-soft text-ink border-0 cursor-pointer disabled:line-through disabled:opacity-60 disabled:cursor-not-allowed}
+ .slot[aria-pressed=true]{@apply bg-sun text-[#2A2000]}
+ :root[data-theme="dark"] .logo-img{filter:brightness(0) invert(1)}
+}
+</style>
+</head>
+<body class="bg-bg text-ink font-sans text-[15px] leading-normal">
+<div class="max-w-[1240px] mx-auto px-5">
+<header class="flex flex-wrap items-center gap-x-8 gap-y-3 mt-4 mb-5 px-7 py-3.5 bg-card rounded-[30px] shadow-card max-md:px-4 sticky top-2 z-10">
+
+  <!-- Kiri: logo (lebar fleksibel) -->
+  <a href="#" id="homeBtn" aria-label="Sang Juara School, kembali ke beranda" class="flex-1 max-md:flex-none">
+    <img src="logo.png" alt="Sang Juara School" class="h-10 md:h-11 w-auto">
+  </a>
+
+  <!-- Tengah: menu -->
+  <nav class="flex gap-1 bg-soft rounded-full p-1 max-md:order-3 max-md:w-full" role="tablist" aria-label="Menu mentor">
+    <button class="tab max-md:flex-1 max-md:px-2" role="tab" data-t="antrean" aria-selected="true">Antrean Tugas</button>
+    <button class="tab max-md:flex-1 max-md:px-2" role="tab" data-t="jadwal" aria-selected="false">Jadwal Sesi</button>
+    <button class="tab max-md:flex-1 max-md:px-2" role="tab" data-t="riwayat" aria-selected="false">Riwayat</button>
+  </nav>
+
+  <!-- Kanan: tombol (lebar fleksibel, rata kanan) -->
+  <div class="flex flex-1 justify-end items-center gap-2.5 max-md:flex-none max-md:ml-auto">
+    <button class="ib" id="theme" aria-label="Ganti tema"><i data-ic="moon" data-s="18"></i></button>
+    <button class="ib" id="bell" aria-label="Notifikasi"><i data-ic="bell" data-s="18"></i><span class="absolute top-1.5 right-[7px] w-[9px] h-[9px] rounded-full bg-[#E5484D] border-2 border-card"></span></button>
+    <span class="av bg-brand" id="me" title="Akun mentor"></span>
+    <button class="btn btn-soft btn-sm" id="logout"><i data-ic="out"></i> Keluar</button>
+  </div>
+</header>
+
+<section class="grid md:grid-cols-[1.25fr_1fr] gap-6 rounded-[22px] p-[30px] max-md:p-5 text-white bg-gradient-to-br from-[#3A3DDB] to-[#14187A] shadow-[0_12px_30px_rgba(35,38,201,.25)]">
+  <div>
+    <span class="inline-flex items-center gap-1.5 text-xs font-bold tracking-wide bg-white/15 rounded-full px-3 py-1"><i class="w-2 h-2 rounded-full bg-sun"></i>PANEL MENTOR</span>
+    <h1 class="font-extrabold text-[clamp(26px,3.6vw,38px)] leading-[1.15] mt-3.5 mb-2.5" id="hello"></h1>
+    <p class="opacity-90 max-w-[52ch]" id="helloSub"></p>
+  </div>
+  <div class="grid gap-3 content-center" id="stats"></div>
+</section>
+
+<main>
+<section id="p-antrean" class="mt-6">
+  <div class="card">
+    <div class="flex flex-wrap items-center gap-2.5 pb-3.5 mb-4 border-b border-line">
+      <h2 class="text-xl font-extrabold">Antrean Tugas</h2><span class="tag" id="cnt"></span>
+      <label class="ml-auto max-sm:ml-0 max-sm:basis-full flex items-center gap-2 bg-soft rounded-full px-3.5 min-w-[160px] flex-[0_1_280px] focus-within:outline focus-within:outline-[3px] focus-within:outline-sun"><i class="text-mute flex" data-ic="search"></i><input id="q" type="search" placeholder="Cari siswa atau judul soal…" aria-label="Cari tugas" class="w-full bg-transparent py-2.5 outline-none"></label>
+    </div>
+    <div class="grid sm:grid-cols-3 gap-3 mb-3.5">
+      <div><label class="lbl !mt-0" for="fm">Mata pelajaran</label><select class="field !py-2.5" id="fm"></select></div>
+      <div><label class="lbl !mt-0" for="fk">Tingkat kesulitan</label><select class="field !py-2.5" id="fk"><option>Semua</option><option>Sulit</option><option>Sedang</option><option>Mudah</option></select></div>
+      <div><label class="lbl !mt-0" for="so">Urutkan</label><select class="field !py-2.5" id="so"><option value="p">Prioritas (deadline + kesulitan)</option><option value="d">Deadline terdekat</option><option value="k">Kesulitan tertinggi</option></select></div>
+    </div>
+    <div class="flex flex-wrap gap-1.5" id="fs"></div>
+  </div>
+  <div id="list"></div>
+</section>
+
+<section id="p-jadwal" class="mt-6 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-6 items-start" hidden>
+  <div class="card"><h2 class="text-xl font-extrabold mb-1">Jadwal Sesi 1-on-1</h2><p class="sub">Sesi yang sudah dijadwalkan, diurutkan dari yang terdekat.</p><div id="sesi"></div></div>
+  <div class="card"><h3 class="text-[19px] font-extrabold">Ketersediaan slot</h3><p class="sub">Matikan slot yang tidak bisa kamu isi. Slot tersebut tidak akan muncul untuk siswa.</p><div id="avail"></div></div>
+</section>
+
+<section id="p-riwayat" class="mt-6" hidden>
+  <div class="card"><h2 class="text-xl font-extrabold">Riwayat pembahasan</h2><p class="sub !mb-0">Tugas yang sudah selesai beserta catatan pembahasan yang dilihat siswa.</p></div>
+  <div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(290px,1fr))]" id="hist"></div>
+</section>
+</main>
+</div>
+
+<dialog id="dlg" class="rounded-2xl p-6 w-[min(540px,94vw)] bg-card text-ink backdrop:bg-black/50">
+  <h3 id="dT" class="text-xl font-extrabold"></h3><p id="dS" class="sub !mb-3"></p>
+  <div id="dK" class="cat"></div>
+  <label class="lbl" for="dSt">Status tugas</label>
+  <select class="field" id="dSt"><option value="baru">Baru</option><option value="jadwal">Dijadwalkan</option><option value="selesai">Selesai</option></select>
+  <div id="dJ" class="grid sm:grid-cols-2 gap-3" hidden>
+    <div><label class="lbl" for="dD">Tanggal sesi</label><input class="field" id="dD" type="date"></div>
+    <div><label class="lbl" for="dTm">Jam sesi</label><select class="field" id="dTm"></select></div>
+  </div>
+  <label class="lbl" for="dN">Catatan pembahasan <small>Dilihat siswa di riwayat</small></label>
+  <textarea class="field min-h-24 resize-y" id="dN" placeholder="Contoh: Dibahas ulang aturan rantai dan latihan 3 soal serupa."></textarea>
+  <div class="flex justify-end gap-2 mt-5"><button type="button" class="btn btn-soft" id="dX">Batal</button><button type="button" class="btn btn-sun" id="dOk">Simpan</button></div>
+</dialog>
+<div id="toast" hidden class="fixed left-1/2 -translate-x-1/2 bottom-5 z-20 max-w-[92vw] bg-deep text-white font-semibold rounded-full px-[18px] py-[11px] shadow-lg"></div>
+<script src="auth.js"></script>
+<script src="mentor.js"></script>
+</body>
+</html>
