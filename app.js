@@ -179,31 +179,46 @@ $("#kirim").onclick = () => {
 /* ---------- Booking sesi 1-on-1 ---------- */
 function busy(t) {
   const d = bk.date, mn = (+t.slice(0, 2)) * 60 + +t.slice(3);
-  return (taken[d] || []).includes(t) || tasks.some(x => x.st === "jadwal" && x.slot.d === d && x.slot.t === t) || (dd(d) === 0 && mn <= now.getHours() * 60 + now.getMinutes());
+  return (taken[d] || []).includes(t)
+    || tasks.some(x => x.st === "jadwal" && x.mentor === bk.mentor && x.slot.d === d && x.slot.t === t)   // bentrok untuk tutor yang sama
+    || (dd(d) === 0 && mn <= now.getHours() * 60 + now.getMinutes());                                     // jam hari ini yang sudah lewat
 }
 function side() {
   const pend = tasks.filter(t => t.st === "baru");
   if (!pend.some(t => t.id === bk.task)) bk.task = pend[0] ? pend[0].id : null;
-  let dopt = ""; for (let i = 0; i < 7; i++) { const s = add(i); dopt += `<option value="${s}" ${s === bk.date ? "selected" : ""}>${i === 0 ? "Hari ini" : i === 1 ? "Besok" : fmt(s, { weekday: "short", day: "numeric", month: "short" })}</option>`; }
+  const step = (n, txt) => `<div class="lbl ${n === 1 ? "!mt-0" : ""}"><span class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-brand text-white grid place-items-center text-xs">${n}</span>${txt}</span></div>`;
+  let days = "";
+  for (let i = 0; i < 7; i++) {                                    // 7 kotak hari: hari ini sampai 6 hari ke depan
+    const s = add(i), d = dt(s), on = s === bk.date, mute = on ? "opacity-90" : "text-mute";
+    days += `<button type="button" class="day rounded-xl py-2.5 text-center border-[1.5px] ${on ? "bg-brand text-white border-brand" : "bg-card border-line hover:bg-soft"}" data-d="${s}" aria-pressed="${on}" aria-label="${fmt(s, { weekday: "long", day: "numeric", month: "long" })}">
+      <span class="block text-[11px] font-semibold ${mute}">${d.toLocaleDateString("id-ID", { weekday: "short" })}</span>
+      <b class="block text-lg font-extrabold leading-tight">${d.getDate()}</b>
+      <span class="block text-[10.5px] ${mute}">${i === 0 ? "Hari ini" : d.toLocaleDateString("id-ID", { month: "short" })}</span></button>`;
+  }
   $("#book").innerHTML = `<h3 class="flex items-center gap-2 text-[19px] font-extrabold"><span class="w-2.5 h-2.5 rounded-full bg-wa"></span>Booking Sesi 1-on-1<span class="tag tag-y ml-auto">${dayLbl(bk.date)}</span></h3>
-  <p class="sub !mb-2.5">Pilih mentor pilihanmu untuk bedah soal macet secara intensif selama 45 menit.</p>
+  <p class="sub !mb-2.5">Ikuti empat langkah berikut untuk bedah soal macet secara intensif selama 45 menit.</p>
   <div class="flex items-center gap-2 bg-soft text-mute rounded-xl px-3.5 py-2.5 text-[13px] mb-4">${ic("pin", 15)} Sesi tatap muka di ${esc(LOKASI)}</div>
-  <label class="lbl !mt-0" for="bkT">Tugas yang mau dibahas</label>
-  <select class="field" id="bkT">${pend.length ? pend.map(t => `<option value="${t.id}" ${t.id === bk.task ? "selected" : ""}>${esc(t.judul)}</option>`).join("") : '<option value="">Belum ada tugas menunggu</option>'}</select>
-  <div class="lbl">Pilih Mentor Tersedia:</div>
+
+  ${step(1, "Pilih soal yang mau dibahas")}
+  <select class="field" id="bkT" aria-label="Soal yang mau dibahas">${pend.length ? pend.map(t => `<option value="${t.id}" ${t.id === bk.task ? "selected" : ""}>${esc(t.judul)}</option>`).join("") : '<option value="">Belum ada tugas menunggu</option>'}</select>
+
+  ${step(2, "Pilih hari")}
+  <div class="grid grid-cols-7 gap-1.5 sm:gap-2" role="group" aria-label="Pilih hari">${days}</div>
+
+  ${step(3, "Pilih tutor")}
   ${M.map(m => `<label class="ment"><input type="radio" name="mt" value="${m.id}" class="w-[18px] h-[18px] accent-[var(--blue)]" ${m.id === bk.mentor ? "checked" : ""}><span class="av" style="background:${m.col}">${m.ini}</span><span><b class="text-sm">${m.n}</b><span class="tag !rounded-md !px-1.5 !py-px ml-1">${m.u}</span><small class="block text-xs text-mute">★ ${m.r.toFixed(1)} (${m.c} sesi)</small></span><span class="ml-auto text-xs font-bold ${m.st === "Standby" ? "text-okt" : "text-mute"}">${m.st}</span></label>`).join("")}
-  <label class="lbl" for="bkD">Tanggal</label><select class="field" id="bkD">${dopt}</select>
-  <div class="lbl">Pilih Jam Sesi:</div>
-  <div class="grid grid-cols-2 gap-2 mb-4">${TIMES.map(t => { const b = busy(t); return `<button class="slot" data-t="${t}" ${b ? "disabled" : ""} aria-pressed="${t === bk.slot}">${t.replace(":", ".")} WIB${b ? " (Penuh)" : ""}</button>`; }).join("")}</div>
+
+  ${step(4, "Pilih jam sesi")}
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">${TIMES.map(t => { const b = busy(t); return `<button class="slot" data-t="${t}" ${b ? "disabled" : ""} aria-pressed="${t === bk.slot}">${t.replace(":", ".")} WIB${b ? " (Penuh)" : ""}</button>`; }).join("")}</div>
   <button class="btn w-full !py-3.5" id="ok">Konfirmasi Jadwal 1-on-1</button>`;
 }
 $("#book").onchange = e => {
   if (e.target.id === "bkT") bk.task = +e.target.value;
-  if (e.target.id === "bkD") { bk.date = e.target.value; bk.slot = ""; }
-  if (e.target.name === "mt") bk.mentor = e.target.value;
+  if (e.target.name === "mt") { bk.mentor = e.target.value; bk.slot = ""; }   // jam kosong bisa berbeda untuk tiap tutor
   side();
 };
 $("#book").onclick = async e => {
+  const dayBtn = e.target.closest(".day"); if (dayBtn) { bk.date = dayBtn.dataset.d; bk.slot = ""; side(); return; }
   const s = e.target.closest(".slot"); if (s && !s.disabled) { bk.slot = s.dataset.t; side(); return; }
   if (e.target.closest("#ok")) {
     const t = tasks.find(x => x.id === bk.task);
