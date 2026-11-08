@@ -5,6 +5,7 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&am
 
 /* ---------- Ikon ---------- */
 const I = {
+  pin: '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
   clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>', chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
   cal: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>', video: '<path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>',
   ok: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14l-3-3"/>', moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
@@ -27,6 +28,7 @@ const when = t => { const [h, m] = t.slot.t.split(":"), s = dt(t.slot.d); s.setH
 const ini = n => n.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
 
 /* ---------- Data contoh ---------- */
+const LOKASI = "Ruang Coaching Clinic Sang Juara School";   // ubah sesuai lokasi sebenarnya
 const TIMES = ["15:30", "16:30", "19:00", "20:15"];
 const KES = { Mudah: 1, Sedang: 2, Sulit: 3 };
 let tasks = [
@@ -56,11 +58,23 @@ function show(t) {
 }
 document.querySelectorAll(".tab").forEach(b => b.onclick = () => show(b.dataset.t));
 $("#homeBtn").onclick = e => { e.preventDefault(); show("antrean"); window.scrollTo({ top: 0, behavior: "smooth" }); };
-$("#logout").onclick = () => { if (confirm("Keluar dari akun mentor?")) SJ.logout(); };
-$("#bell").onclick = () => toast("Belum ada notifikasi baru.");
+$("#logout").onclick = async () => {
+  const yes = await UI.confirm({ title: "Keluar dari akun?", text: "Kamu akan kembali ke halaman masuk.", icon: "out", tone: "danger", ok: "Ya, keluar", cancel: "Batal" });
+  if (yes) SJ.logout();
+};
+UI.initNotif({
+  btn: "#bell",
+  items: () => {
+    const l = [], rel = t => dd(t.dl) < 0 ? "lewat " + -dd(t.dl) + " hari" : dd(t.dl) === 0 ? "deadline hari ini" : "deadline besok";
+    tasks.filter(t => t.st === "baru" && level(t) === "Tinggi").forEach(t => l.push({ id: "u" + t.id, icon: "al", tone: "danger", title: "Tugas mendesak", text: t.siswa + " · " + t.judul + " (" + rel(t) + ")", time: "Prioritas tinggi", go: "antrean" }));
+    tasks.filter(t => t.st === "jadwal" && dd(t.slot.d) <= 1).sort((a, b) => when(a) - when(b)).forEach(t => l.push({ id: "j" + t.id + t.slot.d + t.slot.t, icon: "pin", tone: "brand", title: "Sesi " + dayLbl(t.slot.d).toLowerCase() + " pukul " + t.slot.t.replace(":", "."), text: t.siswa + " · " + t.judul + " · tatap muka", time: dayLbl(t.slot.d), go: "jadwal" }));
+    return l;
+  },
+  onPick: it => show(it.go)
+});
 $("#theme").onclick = () => {
-  const r = document.documentElement;
-  r.dataset.theme = r.dataset.theme === "dark" ? "light" : "dark";
+  const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme:dark)").matches;
+  r.dataset.theme = dark ? "light" : "dark";
 };
 $("#me").textContent = S.ini;
 
@@ -74,7 +88,7 @@ function hero() {
   const box = (i, big, sm, r) => `<div class="stat"><span class="w-[42px] h-[42px] rounded-xl bg-white/15 grid place-items-center shrink-0">${ic(i, 20)}</span><div class="flex-1 min-w-0"><b class="block text-[22px] font-extrabold">${big}</b><span class="text-[13px] opacity-90">${sm}</span></div><em class="not-italic text-[11.5px] font-bold opacity-80">${r}</em></div>`;
   $("#stats").innerHTML =
     box("clip", baru.length + " Perlu ditangani", "Menunggu penjadwalan sesi", urgent ? urgent + " MENDESAK" : "AMAN") +
-    box("video", hari.length + " Sesi hari ini", hari.length ? "Sesi berikutnya pukul " + hari[0].slot.t.replace(":", ".") + " WIB" : "Tidak ada sesi hari ini", "HARI INI") +
+    box("pin", hari.length + " Sesi hari ini", hari.length ? "Sesi berikutnya pukul " + hari[0].slot.t.replace(":", ".") + " WIB" : "Tidak ada sesi hari ini", "HARI INI") +
     box("ok", tuntas + " Tuntas", "Tugas selesai dalam 7 hari terakhir", "PEKAN INI");
 }
 
@@ -90,7 +104,7 @@ function card(t) {
   return `<article class="card !p-5 !mb-3.5" style="border-left:5px solid ${c}">
     <div class="flex flex-wrap items-center gap-2 mb-2"><span class="tag">${esc(t.mapel)}</span><span class="tag ${kcls(t.kes)}">Kesulitan: ${t.kes}</span>${dlPill(t)}<span class="tag ${lc} ml-auto">Prioritas ${lv}</span></div>
     <h3 class="text-[17px] font-extrabold">${esc(t.judul)}</h3>
-    <div class="flex flex-wrap items-center gap-2 text-sm text-mute my-1.5"><span class="av !w-7 !h-7 !text-[11px] bg-brand">${ini(t.siswa)}</span><b class="text-ink">${esc(t.siswa)}</b> · ${esc(t.kelas)}${t.st === "jadwal" ? `<span class="tag">${ic("video", 12)} ${dayLbl(t.slot.d)}, ${t.slot.t.replace(":", ".")} WIB</span>` : ""}</div>
+    <div class="flex flex-wrap items-center gap-2 text-sm text-mute my-1.5"><span class="av !w-7 !h-7 !text-[11px] bg-brand">${ini(t.siswa)}</span><b class="text-ink">${esc(t.siswa)}</b> · ${esc(t.kelas)}${t.st === "jadwal" ? `<span class="tag">${ic("pin", 12)} ${dayLbl(t.slot.d)}, ${t.slot.t.replace(":", ".")} WIB</span>` : ""}</div>
     ${t.kendala ? `<div class="cat"><b>Kendala siswa:</b> ${esc(t.kendala)}</div>` : ""}
     <div class="flex flex-wrap gap-2"><button class="btn btn-sm" data-a="open" data-id="${t.id}">${t.st === "baru" ? "Jadwalkan / kelola" : "Kelola tugas"}</button><button class="btn btn-wa btn-sm" data-a="wa" data-id="${t.id}">${ic("chat", 13)} Chat siswa</button></div>
   </article>`;
@@ -134,7 +148,7 @@ function openDlg(t) {
   $("#dN").value = t.cat || ""; toggleJ(); $("#dlg").showModal();
 }
 $("#dX").onclick = () => $("#dlg").close();
-$("#dOk").onclick = () => {
+$("#dOk").onclick = async () => {
   const t = editing, st = $("#dSt").value;
   if (st === "jadwal") {
     const d = $("#dD").value, h = $("#dTm").value;
@@ -145,6 +159,8 @@ $("#dOk").onclick = () => {
   }
   if (st === "selesai") {
     if (!$("#dN").value.trim()) return toast("Isi catatan pembahasan sebelum menandai selesai.");
+    const yes = await UI.confirm({ title: "Tandai tugas selesai?", text: "Catatan pembahasan akan terlihat oleh " + t.siswa + " di riwayatnya.", icon: "ok", tone: "ok", ok: "Ya, tandai selesai", cancel: "Kembali" });
+    if (!yes) return;
     if (!t.slot) t.slot = { d: add(0), t: TIMES[0] };
   }
   t.st = st; t.cat = $("#dN").value.trim(); $("#dlg").close(); all();
@@ -156,14 +172,14 @@ function sesi() {
   const l = tasks.filter(t => t.st === "jadwal").sort((a, b) => when(a) - when(b)), g = {};
   l.forEach(t => (g[t.slot.d] = g[t.slot.d] || []).push(t));
   $("#sesi").innerHTML = l.length ? Object.keys(g).map(d => `<div class="mb-4"><h3 class="text-sm font-extrabold text-brand mb-1">${dayLbl(d)} <span class="text-mute font-semibold">· ${g[d].length} sesi</span></h3>` +
-    g[d].map(t => `<div class="row"><div class="flex items-center gap-3"><b class="w-14 text-brand">${t.slot.t.replace(":", ".")}</b><div><b>${esc(t.judul)}</b><div class="text-[13px] text-mute">${esc(t.siswa)} · ${esc(t.kelas)}</div></div></div><div class="flex gap-2"><button class="btn btn-sm" data-a="start" data-id="${t.id}">${ic("video", 13)} Mulai sesi</button><button class="btn btn-soft btn-sm" data-a="open" data-id="${t.id}">Ubah</button></div></div>`).join("") + `</div>`).join("")
+    g[d].map(t => `<div class="row"><div class="flex items-center gap-3"><b class="w-14 text-brand">${t.slot.t.replace(":", ".")}</b><div><b>${esc(t.judul)}</b><div class="text-[13px] text-mute">${esc(t.siswa)} · ${esc(t.kelas)}</div></div></div><div class="flex gap-2"><button class="btn btn-sm" data-a="start" data-id="${t.id}">${ic("pin", 13)} Mulai sesi</button><button class="btn btn-soft btn-sm" data-a="open" data-id="${t.id}">Ubah</button></div></div>`).join("") + `</div>`).join("")
     : `<div class="text-center text-mute py-6">Belum ada sesi terjadwal.</div>`;
   $("#avail").innerHTML = TIMES.map(t => `<div class="row"><span><b>${t.replace(":", ".")} WIB</b> <small class="text-mute">· 45 menit</small></span><span class="sw relative w-11 h-6 shrink-0"><input class="absolute inset-0 opacity-0 m-0 cursor-pointer" type="checkbox" data-slot="${t}" ${avail[t] ? "checked" : ""} aria-label="Slot ${t}"><span class="absolute inset-0 rounded-full bg-line pointer-events-none"></span></span></div>`).join("");
 }
 $("#sesi").onclick = e => {
   const b = e.target.closest("[data-a]"); if (!b) return;
   const t = tasks.find(x => x.id == b.dataset.id);
-  if (b.dataset.a === "open") openDlg(t); else toast("Membuka ruang sesi dengan " + t.siswa + "… (contoh tampilan)");
+  if (b.dataset.a === "open") openDlg(t); else toast("Sesi dengan " + t.siswa + " dimulai (tatap muka di " + LOKASI + ").");
 };
 $("#avail").onchange = e => { const t = e.target.dataset.slot; if (t) { avail[t] = e.target.checked; toast("Slot " + t.replace(":", ".") + (avail[t] ? " diaktifkan." : " dinonaktifkan.")); } };
 
@@ -175,5 +191,6 @@ function hist() {
     <div class="cat !mb-0"><b>Catatan pembahasan:</b> ${esc(t.cat || "-")}</div></div>`).join("") : `<div class="card text-center text-mute col-span-full">Belum ada riwayat.</div>`;
 }
 
-function all() { hero(); list(); sesi(); hist(); }
+function all() { hero(); list(); sesi(); hist(); UI.refreshNotif(); }
+$("#lokasi").textContent = LOKASI;
 all();

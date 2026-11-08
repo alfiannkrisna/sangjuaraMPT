@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="light">
+<html lang="id">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -50,29 +50,21 @@ tailwind.config={theme:{extend:{
  .ment{@apply flex items-center gap-3 bg-soft border-[1.5px] border-transparent rounded-xl px-3 py-2.5 mb-2 cursor-pointer}
  .slot{@apply rounded-full py-2.5 font-bold text-[13.5px] bg-soft text-ink border-0 cursor-pointer disabled:line-through disabled:opacity-60 disabled:cursor-not-allowed}
  .slot[aria-pressed=true]{@apply bg-sun text-[#2A2000]}
- :root[data-theme="dark"] .logo-img{filter:brightness(0) invert(1)}
 }
 </style>
 </head>
 <body class="bg-bg text-ink font-sans text-[15px] leading-normal">
 <div class="max-w-[1240px] mx-auto px-5">
 
-<header class="flex flex-wrap items-center gap-x-8 gap-y-3 mt-4 mb-5 px-7 py-3.5 bg-card rounded-[30px] shadow-card max-md:px-4 sticky top-2 z-10">
-
-  <!-- Logo (tanpa teks) = tombol Home -->
-  <a href="#" id="homeBtn" aria-label="Sang Juara School, kembali ke beranda" class="shrink-0 rounded-xl flex-1 max-md:flex-none">
-    <img src="logo.png" alt="Sang Juara School" class="logo-img h-10 md:h-11 w-auto">
-  </a>
-
-  <!-- Navigasi -->
-  <nav class="flex gap-1 bg-soft rounded-full p-1 max-md:order-3 max-md:w-full" role="tablist" aria-label="Menu dashboard">
+<header class="flex flex-wrap items-center gap-3.5 mt-4 mb-5 px-7 py-3.5 bg-card rounded-[30px] shadow-card max-md:px-4">
+  <div class="flex-1 max-md:flex-none text-deep font-extrabold text-[19px] leading-none">SANG JUARA<small class="block text-[9.5px] font-semibold tracking-[.12em] text-brand mt-1">SCHOOL COMPANION</small></div>
+  <nav class="flex gap-0.5 bg-soft rounded-full p-1 max-md:order-3 max-md:w-full" role="tablist" aria-label="Menu dashboard">
     <button class="tab max-md:flex-1 max-md:px-2" role="tab" data-t="tugas" aria-selected="true">Tugas</button>
     <button class="tab max-md:flex-1 max-md:px-2" role="tab" data-t="jadwal" aria-selected="false">Jadwal 1-on-1</button>
     <button class="tab max-md:flex-1 max-md:px-2" role="tab" data-t="riwayat" aria-selected="false">Riwayat</button>
   </nav>
-
-  <!-- Tombol kanan -->
-  <div class="flex flex-1 justify-end items-center gap-2.5 max-md:flex-none max-md:ml-auto">
+  <div class="flex flex-1 max-md:flex-none max-md:ml-auto items-center justify-end gap-2.5">
+    <button class="btn btn-wa btn-sm" id="chatTop"><i data-ic="chat"></i> Chat Mentor</button>
     <button class="ib" id="theme" aria-label="Ganti tema"><i data-ic="moon" data-s="18"></i></button>
     <button class="ib" id="bell" aria-label="Notifikasi"><i data-ic="bell" data-s="18"></i><span class="absolute top-1.5 right-[7px] w-[9px] h-[9px] rounded-full bg-[#E5484D] border-2 border-card"></span></button>
     <button class="av bg-[#7479FF] cursor-pointer" id="logout" title="Keluar" aria-label="Keluar dari akun">AK</button>
@@ -82,8 +74,7 @@ tailwind.config={theme:{extend:{
 <section class="grid md:grid-cols-[1.25fr_1fr] gap-6 rounded-[22px] p-[30px] max-md:p-5 text-white bg-gradient-to-br from-[#3A3DDB] to-[#14187A] shadow-[0_12px_30px_rgba(35,38,201,.25)]">
   <div>
     <span class="inline-flex items-center gap-1.5 text-xs font-bold tracking-wide bg-white/15 rounded-full px-3 py-1"><i class="w-2 h-2 rounded-full bg-sun"></i>COACHING CLINIC SIAGA</span>
-    <h1 class="font-extrabold text-[clamp(26px,3.6vw,40px)] leading-[1.15] mt-3.5 mb-2.5">SangJuara+ : Agendakan Coaching Clinic sesukamu
-    </h1>
+    <h1 class="font-extrabold text-[clamp(26px,3.6vw,40px)] leading-[1.15] mt-3.5 mb-2.5">Dashboard Tugas: bawa soal yang bikin macet, kita tuntaskan bareng.</h1>
     <p class="opacity-90 max-w-[52ch] mb-[18px]">Unggah foto PR atau materi yang bikin bingung, tandai titik buntu, dan booking sesi Coaching Clinic 1-on-1 bareng tutor favoritmu!</p>
     <div class="flex flex-wrap gap-2.5"><button class="btn btn-sun" id="newBtn"><i data-ic="plus"></i> Unggah Soal Baru</button><button class="btn btn-ghost" id="goJadwal"><i data-ic="cal"></i> Lihat Jadwal Mentor</button></div>
   </div>
@@ -123,7 +114,7 @@ tailwind.config={theme:{extend:{
       <button class="ib bg-soft" id="sortBtn" aria-label="Urutkan tugas"><i data-ic="sl" data-s="18"></i></button>
     </div>
     <div class="flex flex-col gap-3.5" id="kan"></div>
-      <div class="flex flex-wrap items-center gap-3.5 bg-soft rounded-2xl px-[18px] py-4 mt-[18px]">
+    <div class="flex flex-wrap items-center gap-3.5 bg-soft rounded-2xl px-[18px] py-4 mt-[18px]">
       <span class="w-[42px] h-[42px] rounded-full bg-warnbg text-warnt grid place-items-center"><i data-ic="zap" data-s="20"></i></span>
       <div class="flex-1 min-w-[200px] text-[13px]"><b class="block text-[13.5px]">Rapor Kilat Pekan Lalu</b>Kamu telah menuntaskan 5 soal PR sulit dengan rata-rata evaluasi 94/100.</div>
       <button id="arsip" class="flex items-center gap-1.5 font-bold text-brand">Buka Arsip Pembahasan <i data-ic="arr"></i></button>
@@ -164,6 +155,7 @@ tailwind.config={theme:{extend:{
 <div id="toast" hidden class="fixed left-1/2 -translate-x-1/2 bottom-5 z-20 max-w-[92vw] bg-deep text-white font-semibold rounded-full px-[18px] py-[11px] shadow-lg"></div>
 
 <script src="auth.js"></script>
+<script src="ui.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
