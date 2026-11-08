@@ -59,10 +59,11 @@ function show(t) {
   ["tugas", "jadwal", "riwayat"].forEach(x => $("#p-" + x).hidden = x !== t);
 }
 document.querySelectorAll(".tab").forEach(b => b.onclick = () => show(b.dataset.t));
+$("#homeBtn").onclick = e => { e.preventDefault(); show("tugas"); window.scrollTo({ top: 0, behavior: "smooth" }); };
 $("#goJadwal").onclick = () => show("jadwal");
 $("#arsip").onclick = () => show("riwayat");
 $("#newBtn").onclick = () => { show("tugas"); $("#formCard").scrollIntoView({ behavior: "smooth" }); $("#judul").focus({ preventScroll: true }); };
-$("#chatTop").onclick = $("#chatSide").onclick = () => toast("Membuka WhatsApp tutor jaga… (contoh tampilan)");
+$("#chatSide").onclick = () => toast("Membuka WhatsApp tutor jaga… (contoh tampilan)");
 $("#logout").onclick = async () => {
   const yes = await UI.confirm({ title: "Keluar dari akun?", text: "Kamu perlu masuk lagi untuk melihat tugas dan jadwal sesimu.", icon: "out", tone: "danger", ok: "Ya, keluar", cancel: "Batal" });
   if (yes) SJ.logout();
@@ -79,8 +80,8 @@ UI.initNotif({
 });
 document.querySelectorAll("[data-x]").forEach(a => a.onclick = e => { e.preventDefault(); toast("Halaman contoh."); });
 $("#theme").onclick = () => {
-  const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme:dark)").matches;
-  r.dataset.theme = dark ? "light" : "dark";
+  const r = document.documentElement;
+  r.dataset.theme = r.dataset.theme === "dark" ? "light" : "dark";
 };
 const when = t => { const [h, m] = t.slot.t.split(":"), s = dt(t.slot.d); s.setHours(+h, +m); return s; };
 const nextSess = () => tasks.filter(t => t.st === "jadwal").sort((a, b) => when(a) - when(b))[0];

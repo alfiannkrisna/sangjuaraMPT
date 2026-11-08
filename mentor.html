@@ -51,6 +51,7 @@ tailwind.config={theme:{extend:{
  .slot{@apply rounded-full py-2.5 font-bold text-[13.5px] bg-soft text-ink border-0 cursor-pointer disabled:line-through disabled:opacity-60 disabled:cursor-not-allowed}
  .slot[aria-pressed=true]{@apply bg-sun text-[#2A2000]}
  :root[data-theme="dark"] .logo-img{filter:brightness(0) invert(1)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .logo-img{filter:brightness(0) invert(1)}}
 }
 </style>
 </head>
@@ -60,7 +61,7 @@ tailwind.config={theme:{extend:{
 
   <!-- Kiri: logo (lebar fleksibel) -->
   <a href="#" id="homeBtn" aria-label="Sang Juara School, kembali ke beranda" class="flex-1 max-md:flex-none">
-    <img src="logo.png" alt="Sang Juara School" class="h-10 md:h-11 w-auto">
+    <img src="logo.png" alt="Sang Juara School" class="logo-img h-10 md:h-11 w-auto">
   </a>
 
   <!-- Tengah: menu -->

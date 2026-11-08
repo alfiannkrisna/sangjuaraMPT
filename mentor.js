@@ -192,5 +192,5 @@ function hist() {
 }
 
 function all() { hero(); list(); sesi(); hist(); UI.refreshNotif(); }
-$("#lokasi").textContent = LOKASI;
+const lk = $("#lokasi"); if (lk) lk.textContent = LOKASI;
 all();
