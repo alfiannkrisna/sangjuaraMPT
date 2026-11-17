@@ -18,14 +18,16 @@ const UI = (() => {
   document.head.appendChild(css);
 
   /* ---------- Dialog konfirmasi: await UI.confirm({...}) -> true / false ---------- */
+  let dialogId = 0;
   function confirm({ title, text = "", ok = "Ya", cancel = "Batal", icon = "info", tone = "brand", details = [] } = {}) {
     return new Promise(res => {
       const d = document.createElement("dialog");
       d.className = "sj rounded-2xl p-0 w-[min(420px,92vw)] bg-card text-ink shadow-2xl backdrop:bg-black/50";
-      d.setAttribute("aria-labelledby", "sjT");
+      const titleId = `sjT-${++dialogId}`;
+      d.setAttribute("aria-labelledby", titleId);
       d.innerHTML = `<div class="p-6 text-center">
         <div class="w-14 h-14 rounded-full grid place-items-center mx-auto mb-4 ${TONE[tone] || TONE.brand}">${svg(icon, 26)}</div>
-        <h3 id="sjT" class="text-xl font-extrabold">${esc(title)}</h3>
+        <h3 id="${titleId}" class="text-xl font-extrabold">${esc(title)}</h3>
         ${text ? `<p class="text-mute text-sm mt-2">${esc(text)}</p>` : ""}
         ${details.length ? `<dl class="text-left bg-soft rounded-xl px-4 py-3 mt-4 text-sm grid gap-1.5">${details.map(([k, v]) => `<div class="flex gap-3"><dt class="text-mute w-16 shrink-0">${esc(k)}</dt><dd class="font-semibold min-w-0">${esc(v)}</dd></div>`).join("")}</dl>` : ""}
         <div class="grid grid-cols-2 gap-3 mt-6"><button type="button" data-v="0" class="btn btn-soft">${esc(cancel)}</button><button type="button" data-v="1" class="btn ${tone === "danger" ? "!bg-[#E5484D]" : ""}">${esc(ok)}</button></div></div>`;
@@ -42,7 +44,8 @@ const UI = (() => {
   }
 
   /* ---------- Panel notifikasi (popover di bawah tombol lonceng) ---------- */
-  let cfg = null, panel = null; const read = new Set();
+  let cfg = null, panel = null; let read = new Set();
+  let readKey = "";
   const items = () => cfg ? cfg.items() : [];
   function renderPanel() {
     const l = items(), n = l.filter(i => !read.has(i.id)).length;
@@ -50,14 +53,14 @@ const UI = (() => {
     <div class="max-h-[60vh] overflow-y-auto">${l.length ? l.map(i => `<button type="button" data-id="${esc(i.id)}" class="w-full text-left flex gap-3 px-4 py-3 border-b border-line last:border-0 hover:bg-soft ${read.has(i.id) ? "opacity-60" : ""}"><span class="w-9 h-9 rounded-full grid place-items-center shrink-0 ${TONE[i.tone] || TONE.brand}">${svg(i.icon, 17)}</span><span class="flex-1 min-w-0"><b class="block text-sm">${esc(i.title)}</b><span class="block text-[13px] text-mute">${esc(i.text)}</span><span class="block text-xs text-mute mt-1">${esc(i.time || "")}</span></span>${read.has(i.id) ? "" : '<i class="w-2.5 h-2.5 rounded-full bg-[#E5484D] mt-1.5 shrink-0"></i>'}</button>`).join("")
       : `<div class="text-center text-mute text-sm py-10 px-4"><div class="w-12 h-12 rounded-full bg-soft grid place-items-center mx-auto mb-3">${svg("bell", 22)}</div><b class="block text-ink">Belum ada notifikasi</b>Pengingat sesi dan deadline akan muncul di sini.</div>`}</div>`;
   }
-  function closePanel() { if (!panel) return; panel.remove(); panel = null; cfg.btn.setAttribute("aria-expanded", "false"); }
+  function closePanel() { if (!panel) return; const restore = panel.contains(document.activeElement); panel.remove(); panel = null; cfg.btn.setAttribute("aria-expanded", "false"); if (restore) cfg.btn.focus(); }
   function openPanel() {
     panel = document.createElement("div");
     panel.className = "sj-pop fixed z-30 w-[min(380px,calc(100vw-16px))] bg-card text-ink border border-line rounded-2xl shadow-2xl overflow-hidden";
     panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Notifikasi");
     const r = cfg.btn.getBoundingClientRect();
     panel.style.top = (r.bottom + 8) + "px"; panel.style.right = Math.max(8, innerWidth - r.right - 4) + "px";
-    renderPanel(); document.body.appendChild(panel); cfg.btn.setAttribute("aria-expanded", "true");
+    renderPanel(); document.body.appendChild(panel); panel.querySelector("button")?.focus(); cfg.btn.setAttribute("aria-expanded", "true");
     panel.onclick = e => {
       if (e.target.closest("[data-all]")) { items().forEach(i => read.add(i.id)); refreshNotif(); return; }
       const b = e.target.closest("[data-id]"); if (!b) return;
@@ -65,7 +68,8 @@ const UI = (() => {
       if (it) { read.add(it.id); closePanel(); refreshNotif(); if (cfg.onPick) cfg.onPick(it); }
     };
   }
-  function refreshNotif() {                                   // panggil setiap data berubah
+  function refreshNotif() {
+    if (readKey) try { const value = JSON.stringify([...read]); if (localStorage.getItem(readKey) !== value) localStorage.setItem(readKey, value); } catch { toast("Status notifikasi tidak dapat disimpan."); }                                   // panggil setiap data berubah
     if (!cfg) return;
     const n = items().filter(i => !read.has(i.id)).length, dot = cfg.btn.querySelector("span.absolute");
     if (dot) dot.hidden = n === 0;
@@ -73,6 +77,9 @@ const UI = (() => {
     if (panel) renderPanel();
   }
   function initNotif({ btn, items, onPick }) {
+    readKey = "sj-read-" + (SJ.get()?.role || "demo");
+    try { const saved = JSON.parse(localStorage.getItem(readKey) || "[]"); if (Array.isArray(saved)) read = new Set(saved.filter(x => typeof x === "string")); } catch {}
+    addEventListener("storage", e => { if (e.key === readKey) { try { read = new Set(JSON.parse(e.newValue || "[]")); refreshNotif(); } catch {} } });
     cfg = { btn: document.querySelector(btn), items, onPick };
     cfg.btn.setAttribute("aria-haspopup", "dialog"); cfg.btn.setAttribute("aria-expanded", "false");
     cfg.btn.onclick = () => panel ? closePanel() : openPanel();

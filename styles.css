@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{--bg:#F6F5FF;--card:#fff;--ink:#1B1D3A;--mute:#5D6086;--line:#E3E5F4;--blue:#2326C9;--deep:#14187A;--soft:#EEF0FF;--tagb:#E8EAFF;--warnbg:#FFF4D1;--warnt:#7A4300;--bad:#C0392B;--badbg:#FFE4E1;--okbg:#DCF5E5;--okt:#0F6A35;--sh:0 6px 24px rgba(35,38,201,.08);color-scheme:light}
+:root[data-theme="dark"]{--bg:#0D0F2B;--card:#171A45;--ink:#EEF0FF;--mute:#A6A9D6;--line:#2B2F6B;--blue:#7479FF;--soft:#232763;--tagb:#262A6E;--warnbg:#3D3210;--warnt:#FFE3A0;--badbg:#4A1E22;--bad:#FF8A80;--okbg:#12382A;--okt:#7BE0A5;--sh:none;color-scheme:dark}
+:focus-visible{outline:3px solid #FFC21A;outline-offset:2px}
+[hidden]{display:none!important}
+.ment:has(input:checked){border-color:var(--blue)}
+.sw span{transition:.2s}.sw span:after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.2s}
+.sw input:checked+span{background:#16A34A}.sw input:checked+span:after{left:23px}
+
+
+@layer components{
+ .card{@apply bg-card border border-line rounded-[20px] p-6 shadow-card mb-[18px]}
+ .tag{@apply inline-flex items-center gap-1 text-[11.5px] font-bold rounded-full px-2.5 py-[3px] bg-tagb text-brand}
+ .tag-y{@apply bg-warnbg text-warnt}.tag-r{@apply bg-badbg text-bad}
+ .btn{@apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-bold bg-brand text-white cursor-pointer border-0 transition hover:brightness-110}
+ .btn-sm{@apply px-3.5 py-2 text-[13px]}.btn-wa{@apply bg-wa}.btn-sun{@apply bg-sun text-[#2A2000]}.btn-soft{@apply bg-soft text-mute}.btn-ghost{@apply bg-white/15 text-white}
+ .field{@apply w-full border-[1.5px] border-line bg-card rounded-xl px-3.5 py-3}
+ .lbl{@apply flex justify-between items-baseline gap-2 font-bold text-sm mt-3.5 mb-1.5}
+ .lbl small{@apply font-normal text-mute text-[12.5px]}
+ .sub{@apply text-mute text-sm mt-1.5 mb-4}
+ .chip{@apply inline-flex items-center gap-1 rounded-full px-3.5 py-1.5 text-[13px] font-semibold bg-soft text-ink cursor-pointer border-0}
+ .chip[aria-pressed=true]{@apply bg-sun text-[#2A2000]}
+ .tab{@apply px-6 py-2 rounded-full font-bold text-mute bg-transparent border-0 cursor-pointer}
+ .tab[aria-selected=true]{@apply bg-brand text-white}
+ .ib{@apply w-[38px] h-[38px] rounded-full grid place-items-center relative bg-transparent border-0 cursor-pointer text-ink}
+ .av{@apply w-9 h-9 rounded-full grid place-items-center text-white font-extrabold text-[13px] shrink-0}
+ .stat{@apply flex items-center gap-3.5 bg-white/10 border border-white/20 rounded-2xl px-[18px] py-3.5}
+ .kcol{@apply bg-soft rounded-2xl p-3.5}
+ .kc{@apply bg-card rounded-[14px] p-3.5 mb-3}
+ .cat{@apply bg-tagb text-brand rounded-[10px] px-3 py-2.5 text-[12.5px] mb-3}
+ .emp{@apply border-2 border-dashed border-line rounded-[14px] px-3.5 py-5 text-center text-xs text-mute}
+ .row{@apply flex items-center justify-between gap-2.5 py-2.5 border-b border-line last:border-0}
+ .ment{@apply flex items-center gap-3 bg-soft border-[1.5px] border-transparent rounded-xl px-3 py-2.5 mb-2 cursor-pointer}
+ .slot{@apply rounded-full py-2.5 font-bold text-[13.5px] bg-soft text-ink border-0 cursor-pointer disabled:line-through disabled:opacity-60 disabled:cursor-not-allowed}
+ .slot[aria-pressed=true]{@apply bg-sun text-[#2A2000]}
+ :root[data-theme="dark"] .logo-img{filter:brightness(0) invert(1)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .logo-img{filter:brightness(0) invert(1)}}
+}
+
+button:disabled{opacity:.55;cursor:not-allowed}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
