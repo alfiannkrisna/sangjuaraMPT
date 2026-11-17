@@ -2,18 +2,6 @@
 
 HTML, vanilla JavaScript, Tailwind CSS 3.4.19. Tidak ada backend. **Autentikasi dan data lokal bukan keamanan produksi**: siapa pun dapat mengubah data/sesi melalui DevTools. Jangan gunakan kredensial atau data siswa sungguhan.
 
-## Menjalankan
-
-Dari direktori repositori `/run/media/alfan_ghofari/Data/BARU/KULIAH/7/MPT/dasbor_MPT`:
-
-```sh
-npm ci
-npm run build
-npm test
-python3 -m http.server 8001
-```
-
-Buka <http://localhost:8001/login.html>. CSS hasil build di `dist/styles.css` ikut disimpan sehingga demo dapat dijalankan tanpa npm terlebih dahulu. Jalankan `npm run build` setelah mengubah kelas HTML/JS/CSS; `npm run watch` untuk pengembangan. Node 22 digunakan untuk pengujian. Google Fonts opsional; tanpa internet memakai font sistem. Tailwind tidak lagi dimuat dari CDN.
 
 ## Akun demo
 
