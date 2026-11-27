@@ -25,7 +25,8 @@ const Core = (() => {
     if (!M.some(m => m.id === mentor)) return "Mentor tidak valid.";
     if (!validDate(d) || !TIMES.includes(h)) return "Pilih tanggal dan jam sesi yang valid.";
     if (d < date(now) || new Date(`${d}T${h}:00+07:00`) <= now) return "Tanggal atau jam sesi sudah lewat.";
-    if (!state.avail[mentor]?.[h]) return "Slot mentor sedang dinonaktifkan.";
+    if (!state.avail[mentor]?.[h]) 
+       "Slot mentor sedang dinonaktifkan.";
     if (state.tasks.some(x => x.id !== task.id && x.st === "jadwal" && x.slot.d === d && x.slot.t === h && (x.mentor === mentor || x.studentId === task.studentId))) return "Jadwal bentrok dengan sesi mentor atau siswa lain.";
     return "";
   }
@@ -46,6 +47,24 @@ const Core = (() => {
     const start = add(-((weekday + 6) % 7) + offset * 7, today), end = add(7, start);
     return tasks.filter(t => t.st === "selesai" && t.completedAt >= start && t.completedAt < end).length;
   }
-  return { TIMES, MAPEL, KES, LOKASI, M, date, validDate, add, dd, fmt, dayLbl, when, scheduleError, fileError, phone, weekly };
+    function ratingStats(tasks, mentor) {
+    const done = tasks.filter(t => t.st === "selesai" && t.mentor === mentor);
+    const rated = done.filter(t => t.rating);
+    const sum = rated.reduce((a, t) => a + t.rating.stars, 0);
+    return { sudah: rated.length, belum: done.length - rated.length, total: done.length, avg: rated.length ? sum / rated.length : 0 };
+  }
+  function monthCount(tasks, now = new Date()) {
+    const ym = date(now).slice(0, 7);
+    return tasks.filter(t => (t.st === "jadwal" && t.slot.d.startsWith(ym)) || (t.st === "selesai" && t.completedAt.startsWith(ym))).length;
+  }
+  /* Grid bulan Senin–Minggu. ym = "2026-11". */
+  function monthGrid(ym) {
+    const [y, m] = ym.split("-").map(Number), first = ym + "-01";
+    const lead = (new Date(first + "T00:00:00Z").getUTCDay() + 6) % 7;
+    const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    return Array.from({ length: Math.ceil((lead + days) / 7) * 7 }, (_, i) => { const d = add(i - lead, first); return { d, in: d.startsWith(ym) }; });
+  }
+  const addMonth = (ym, n) => { const [y, m] = ym.split("-").map(Number); return new Date(Date.UTC(y, m - 1 + n, 1)).toISOString().slice(0, 7); };
+    return { TIMES, MAPEL, KES, LOKASI, M, date, validDate, add, dd, fmt, dayLbl, when, scheduleError, fileError, phone, weekly, ratingStats, monthCount, monthGrid, addMonth };
 })();
 if (typeof module !== "undefined") module.exports = Core;

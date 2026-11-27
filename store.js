@@ -19,6 +19,7 @@ const Store = (() => {
       if (t.st === "selesai" && (!Core.validDate(t.completedAt) || !t.cat?.trim())) throw Error("Data penyelesaian lokal tidak valid.");
       if (t.attachment && (typeof t.attachment.id !== "string" || typeof t.attachment.name !== "string" || !Number.isInteger(t.attachment.size) || t.attachment.size <= 0 || t.attachment.size > 10 * 1024 * 1024)) throw Error("Metadata lampiran tidak valid.");
       if (t.cat !== undefined && (typeof t.cat !== "string" || t.cat.length > 4000)) throw Error("Catatan maksimal 4000 karakter.");
+      if (t.rating !== undefined && (t.st !== "selesai" || !Number.isInteger(t.rating.stars) || t.rating.stars < 1 || t.rating.stars > 5 || typeof (t.rating.comment ?? "") !== "string" || (t.rating.comment ?? "").length > 1000)) throw Error("Data penilaian tidak valid.");
       ids.add(t.id);
     }
     return s;
@@ -63,10 +64,22 @@ const Store = (() => {
         if (changes.mentor && Core.M.some(m => m.id === changes.mentor)) t.mentor = changes.mentor;
       } else if (changes.st === "baru") { delete t.slot; delete t.completedAt; }
       else throw Error("Status tidak valid.");
+      if (changes.st !== "selesai") delete t.rating;
       t.st = changes.st; t.cat = changes.cat?.trim() || "";
+    });
+
+  }
+  
+  async function rate(id, stars, comment = "") {
+    return update(s => {
+      const t = s.tasks.find(x => x.id === id);
+      if (!t || t.st !== "selesai") throw Error("Hanya tugas yang sudah selesai yang bisa dinilai.");
+      if (t.rating) throw Error("Tugas ini sudah dinilai.");
+      if (!Number.isInteger(stars) || stars < 1 || stars > 5) throw Error("Pilih rating 1 sampai 5 bintang.");
+      if (comment.length > 1000) throw Error("Komentar maksimal 1000 karakter.");
+      t.rating = { stars, comment: comment.trim(), at: Core.date() };
     });
   }
   function subscribe(fn) { addEventListener("storage", e => { if (e.key === KEY || e.key === null) fn(); }); }
-  return { KEY, seed, validate, load, update, create, manage, subscribe };
-})();
+return { KEY, seed, validate, load, update, create, manage, rate, subscribe };})();
 if (typeof module !== "undefined") module.exports = Store;

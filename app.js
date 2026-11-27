@@ -7,6 +7,8 @@ const KENDALA = ["Paham materi, macet di hitungan", "Tidak tahu mulai dari mana"
 const mt = id => M.find(m => m.id === id) || M[0];
 let state, tasks = [], hm = "Semua", kchip = "", byNew = false;
 let bk = { task: null, mentor: "d", date: add(0), slot: "" };
+let rd = {};   // draf penilaian per tugas: { [taskId]: { stars, comment } }
+const stars = n => "★".repeat(n) + "☆".repeat(5 - n);
 const nextSess = () => tasks.filter(t => t.st === "jadwal").sort((a,b) => when(a)-when(b))[0];
 const done = () => Core.weekly(tasks);
 $("#me").textContent = SESSION.ini; $("#me").title = SESSION.name;
@@ -31,6 +33,7 @@ UI.initNotif({
     const l = [];
     tasks.filter(t => t.st === "jadwal").sort((a, b) => when(a) - when(b)).forEach(t => l.push({ id: "s" + t.id + t.slot.d + t.slot.t, icon: "pin", tone: "brand", title: "Sesi " + dayLbl(t.slot.d).toLowerCase() + " pukul " + t.slot.t.replace(":", "."), text: t.judul + " bersama " + mt(t.mentor).n + ". Mohon hadir 10 menit lebih awal.", time: dayLbl(t.slot.d), go: "jadwal" }));
     tasks.filter(t => t.st === "baru" && dd(t.dl) <= 1).forEach(t => l.push({ id: "d" + t.id + t.dl, icon: "al", tone: "danger", title: dd(t.dl) < 0 ? "Deadline terlewat" : "Deadline mendekat", text: t.judul + " — " + (dd(t.dl) < 0 ? "lewat " + -dd(t.dl) + " hari" : dd(t.dl) === 0 ? "hari ini" : "besok") + ". Segera pilih jadwal bimbingan.", time: "Penting", go: "jadwal" }));
+    tasks.filter(t => t.st === "selesai" && !t.rating).forEach(t => l.push({ id: "r" + t.id, icon: "ok", tone: "brand", title: "Beri penilaian untuk mentor", text: t.judul + " sudah dibahas bersama " + mt(t.mentor).n + ". Bagikan pendapatmu.", time: "Dibahas " + fmt(t.completedAt), go: "riwayat" }));
     return l;
   },
   onPick: it => show(it.go)
@@ -203,20 +206,46 @@ function upcoming() {
     : `<div class="text-mute text-center py-5">Belum ada sesi. Pilih mentor dan jam di sebelah kiri.</div>`;
 }
 $("#upcoming").onclick = e => { if (e.target.closest("[data-n]")) toast("Demo tidak mengirim pengingat WhatsApp."); };
+
+/* Penilaian siswa untuk mentor: sudah dinilai -> tampil ringkas; belum -> form bintang + komentar */
+function rateBox(t) {
+  if (t.rating) return `<div class="cat !mb-0 mt-2.5"><b class="text-warnt" aria-label="${t.rating.stars} dari 5 bintang">${stars(t.rating.stars)}</b> Penilaianmu${t.rating.comment ? ": " + esc(t.rating.comment) : ""}</div>`;
+  const d = rd[t.id] || {}, v = d.stars || 0;
+  return `<div class="mt-3 border-t border-line pt-3" data-rate="${t.id}">
+    <b class="block text-sm mb-1">Beri penilaian untuk ${esc(mt(t.mentor).n)}</b>
+    <div class="flex gap-0.5" role="group" aria-label="Pilih jumlah bintang">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-star="${n}" aria-label="${n} bintang" aria-pressed="${n === v}" class="text-[28px] leading-none px-0.5 bg-transparent border-0 cursor-pointer ${n <= v ? "text-sun" : "text-line"}">★</button>`).join("")}</div>
+    <textarea class="field mt-2 min-h-16 resize-y" maxlength="1000" aria-label="Komentar penilaian" placeholder="Komentar untuk mentor (opsional)">${esc(d.comment || "")}</textarea>
+    <button type="button" class="btn btn-sm mt-2" data-send>Kirim penilaian</button></div>`;
+}
 function hist() {
   const a = tasks.filter(t => t.st === "selesai"), ms = ["Semua", ...new Set(a.map(t => t.mapel))];
   $("#hchips").innerHTML = ms.map(m => `<button class="chip" aria-pressed="${m === hm}" data-h="${esc(m)}">${esc(m)}</button>`).join("");
   const l = a.filter(t => hm === "Semua" || t.mapel === hm);
-  $("#hist").innerHTML = l.length ? l.map(t => `<div class="card !mb-0"><h3 class="text-[17px] font-extrabold">${esc(t.judul)}</h3>${attachment(t)}<div class="text-[13px] text-mute mt-1 mb-2">${esc(t.mapel)} · dibahas ${fmt(t.completedAt, { day: "numeric", month: "long" })} · ${mt(t.mentor).n}</div>${t.kendala ? `<span class="tag tag-y">${esc(t.kendala)}</span>` : ""}<div class="cat !mb-0 mt-3"><b>Catatan mentor:</b> ${esc(t.cat || "Belum ada catatan dari mentor.")}</div></div>`).join("")
+  $("#hist").innerHTML = l.length ? l.map(t => `<div class="card !mb-0"><h3 class="text-[17px] font-extrabold">${esc(t.judul)}</h3>${attachment(t)}<div class="text-[13px] text-mute mt-1 mb-2">${esc(t.mapel)} · dibahas ${fmt(t.completedAt, { day: "numeric", month: "long" })} · ${mt(t.mentor).n}</div>${t.kendala ? `<span class="tag tag-y">${esc(t.kendala)}</span>` : ""}<div class="cat !mb-0 mt-3"><b>Catatan mentor:</b> ${esc(t.cat || "Belum ada catatan dari mentor.")}</div>${rateBox(t)}</div>`).join("")
     : `<div class="card text-mute text-center col-span-full">Belum ada tugas tuntas.</div>`;
 }
 $("#hchips").onclick = e => { const b = e.target.closest("[data-h]"); if (b) { hm = b.dataset.h; hist(); } };
+$("#hist").oninput = e => { const box = e.target.closest("[data-rate]"); if (box) (rd[box.dataset.rate] ||= {}).comment = e.target.value; };
+$("#hist").onclick = async e => {
+  const box = e.target.closest("[data-rate]"); if (!box) return;
+  const id = box.dataset.rate, star = e.target.closest("[data-star]");
+  if (star) { (rd[id] ||= {}).stars = +star.dataset.star; hist(); return; }
+  const send = e.target.closest("[data-send]"); if (!send || send.disabled) return;
+  send.disabled = true;
+  try {
+    await Store.rate(id, rd[id]?.stars || 0, box.querySelector("textarea").value);
+    delete rd[id]; all(); toast("Terima kasih! Penilaianmu sudah tersimpan.");
+  } catch (error) { toast(error.message); }
+  finally { send.disabled = false; }
+};
 
 function all() {
   state = Store.load(); tasks = state.tasks.filter(t => t.studentId === SESSION.id);
   if (bk.date < Core.date()) { bk.date = Core.date(); bk.slot = ""; }
   $("#dl").min = Core.date();
-  stats(); board(); side(); target(); upcoming(); hist(); UI.refreshNotif();
+  stats(); board(); side(); target(); upcoming();
+  if (!document.activeElement?.closest?.("#hist")) hist();   // jangan timpa komentar yang sedang diketik
+  UI.refreshNotif();
   $("#weeklyReport").textContent = `Pekan ini: ${done()} soal selesai. Pekan lalu: ${Core.weekly(tasks, -1)} soal.`;
   const prefs = state.prefs[SESSION.id] || {};
   if (document.activeElement !== $("#wa")) $("#wa").value = prefs.wa || "";
